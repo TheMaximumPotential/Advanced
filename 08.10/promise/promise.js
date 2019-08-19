@@ -29,6 +29,7 @@
             }
             return this.next
         },
+
         catch(onRejected) {
             if (!onRejected || this._status === 'fulfilled') return
             this.onRejected = onRejected
@@ -42,6 +43,7 @@
             }
             return this.next
         },
+
         _taskCallback(value, processor, next) {
             let result = null,
                 normal = 1
@@ -67,6 +69,7 @@
                 next._reject(result)
             }
         },
+
         _resolve(res) {
             if (this._status === 'rejected') return
             this._status = 'fulfilled'
@@ -79,6 +82,7 @@
                 )
             }
         },
+
         _reject(err) {
             if (this._status === 'fulfilled') return
             this._status = 'rejected'
@@ -91,9 +95,11 @@
                 )
             }
         },
+
         onFulfilled(res) {
             this.next._resolve(res)
         },
+        
         onRejected(err) {
             this.next._reject(err)
         }
