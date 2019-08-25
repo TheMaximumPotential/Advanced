@@ -30,7 +30,7 @@ const createdDebounce = (fn, delay = 1000) => {
 }
 
 // 新增触底节流生命周期
-const reachBottomNotify = {
+export const reachBottomNotify = {
 	install: (Vue, options) => {
 		Vue.mixin({
 			data() {
@@ -69,7 +69,7 @@ const reachBottomNotify = {
 }
 
 // echarts
-const functionalTool = {
+export const functionalTool = {
 	install: (Vue, options) => {
 		Vue.mixin({
 			methods: {
@@ -77,17 +77,20 @@ const functionalTool = {
 				createdDebounce
 			}
 		}),
-		Vue.components(echarts, {
+		Vue.component('echarts', {
 			props: {
 				width: {
                     type: Number,
                     default: -1
                 },
-
                 height: {
                     type: Number,
                     default: -1
                 },
+                options: {
+                    type: Object,
+                    default: {}
+                }
 			},
 			render: (createElement) => {
 				createElement('div', {
@@ -109,7 +112,19 @@ const functionalTool = {
 				}
 			},
 			methods: {
-
+				// 依赖注入
+				receiveEchartsContext(context) {
+					this.echartsContext = context
+				},
+				draw() {
+					this.echartsContext.setOption(this.options)
+				}
+			}
+		})
+		Vue.directive('echarts', {
+			inserted: (el, binding, vnode) => {
+				const echarts = echarts.init(el)
+				vnode.context.receiveEchartsContext && vnode.context.receiveEchartsContext(echarts)
 			}
 		})
 	}
