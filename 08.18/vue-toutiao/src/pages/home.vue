@@ -1,6 +1,6 @@
 <template>
 	<div>
-		home
+		<span>home</span>
 		<router-link to="/main">跳转</router-link>
 	</div>
 </template>

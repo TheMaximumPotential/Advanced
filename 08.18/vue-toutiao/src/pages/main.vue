@@ -7,6 +7,7 @@
 			:is="item.type | formatComponentName"
 		>
 		</component>
+		<router-link to="/home">跳转</router-link>
 	</div>
 </template>
 

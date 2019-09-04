@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>vue</title>
+	<meta charset="utf-8">
+</head>
+<body>
+<div id="app"></div>
+
+<script type="text/javascript">
+	class Vue {
+		constructor(options){
+			this.$el = document.querySelector(options.el)
+			this.$data = options.data && options.data()
+			this.render = options.render
+
+			// this._update()
+		}
+
+		_update() {
+			const $root = this.render(this._createElement)
+			api.replaceChild(this.$el, this.$root)
+		}
+
+		_createElement(tagName, data, children) {
+			const tag = document.createElement(tagName);
+			const { attrs = {} } = data
+			console.log(attrs)
+			for (let attrName in attrs) {
+				tag.setAttribute(attrName, attrs[attrName])
+			}
+			if (''.toString.call(children) !== '[object Array]') {
+				let child = document.createTextNode(children)
+				tag.appendChild(child)
+			} else {
+				children.forEach(child => tag.appendChild(child))
+			}
+		}
+	}
+
+	const api = {
+		replaceChild: (oldElement, element) => {
+			return oleElement.parentElement.replaceChild(element, oldElement)
+		}
+	}
+
+	new Vue({
+		el: "#app",
+		data() {
+			return {
+				infos: {
+					title: 'vue实现'
+				},
+				price: 27
+			}
+		},
+		render(createElement) {
+			return createElement('div', {
+				attrs: {
+					title: this.data.infos.title
+				}
+			}, [
+				createElement('span', {}, this.data.price)
+			])
+		}
+	})
+</script>
+</body>
+</html>

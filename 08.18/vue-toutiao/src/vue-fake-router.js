@@ -29,12 +29,22 @@ export default class VueRouter {
 			}
 		})
 		Vue.component('router-link', {
+			props: {
+				to: {
+					type: String,
+					require: true
+				}
+			},
 			render(createElement) {
+				const path = this.$options.propsData.to
+				const text = this.$slots.default[0].text
+				console.log(text)
 				return createElement('a', {
-					on: {
-						click: (path) => {
-							console.log(path)
-						}
+					attrs: {
+						href: '#' + path
+					},
+					domProps: {
+					    innerHTML: text
 					}
 				})
 			}
