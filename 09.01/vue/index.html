@@ -9,47 +9,157 @@
 
 <script type="text/javascript">
 	class Vue {
-		constructor(options){
+		constructor(options) {
 			this.$el = document.querySelector(options.el)
-			this.$data = options.data && options.data()
+			this._data = options.data && options.data()
+			new Observe(this._data)
 			this.render = options.render
-
-			// this._update()
+			for (let key in this._data) {
+				proxy(this, this._data, key)
+			}
+			new Watcher(() => {
+				this._update()
+			}, () => {
+				console.log('callback')
+			})
 		}
 
 		_update() {
 			const $root = this.render(this._createElement)
-			api.replaceChild(this.$el, this.$root)
+			api.replaceChild(this.$el, $root)
+			this.$el = $root
 		}
 
 		_createElement(tagName, data, children) {
-			const tag = document.createElement(tagName);
+			const tag = document.createElement(tagName)
 			const { attrs = {} } = data
-			console.log(attrs)
 			for (let attrName in attrs) {
 				tag.setAttribute(attrName, attrs[attrName])
 			}
-			if (''.toString.call(children) !== '[object Array]') {
+			if (Object.prototype.toString.call(children) !== '[object Array]') {
 				let child = document.createTextNode(children)
 				tag.appendChild(child)
 			} else {
 				children.forEach(child => tag.appendChild(child))
 			}
+			return tag
 		}
+	}
+
+	class Dep {
+		constructor() {
+			this.subs = []
+		}
+
+		addSub(sub) {
+			if (this.subs.indexOf(sub) < 0) {
+				this.subs.push(sub)
+			}
+		}
+
+		notify() {
+			const subs = this.subs.slice()
+			subs.forEach(sub => sub.update())
+		}
+
+		addDepend() {
+			Dep.targets[Dep.targets.length - 1].addDep(this)
+		}
+	}
+
+	Dep.targets = []
+
+	function pushTarget(instance) {
+		Dep.targets.push(instance)
+	}
+
+	function popTarget() {
+		return Dep.targets.pop()
+	}
+
+	class Watcher {
+		constructor(getter, callback) {
+			this.callback = callback
+			this.getter = getter
+			this.value = this.get()
+		}
+
+		get() {
+			pushTarget(this)
+			let value = this.getter()
+			popTarget()
+			return value
+		}
+
+		addDep(dep) {
+			dep.addSub(this)
+		}
+
+		update() {
+			console.log('更新视图')
+			let newValue = this.get()
+			return newValue
+		}
+	}
+
+	class Observe {
+		constructor(obj) {
+			this.walk(obj)
+		}
+
+		walk(obj) {
+			Object.keys(obj).forEach(key => {
+				if (typeof obj[key] === 'object'
+					&& obj[key] !== null
+				) {
+					this.walk(obj[key])
+				}
+				defineReactive(obj, key, obj[key])
+			})
+			return obj
+		}
+	}
+
+	function proxy(target, data, key) {
+		Object.defineProperty(target, key, {
+			get() {
+				return data[key]
+			},
+			set(newValue) {
+				data[key] = newValue
+			}
+		})
+	}
+
+	function defineReactive(target, key, value) {
+		const dep = new Dep()
+		Object.defineProperty(target, key, {
+			get() {
+				if (Dep.targets.length) {
+					dep.addDepend()
+				}
+				return value
+			},
+			set(newValue) {
+				value = newValue
+				dep.notify()
+			}
+		})
 	}
 
 	const api = {
 		replaceChild: (oldElement, element) => {
-			return oleElement.parentElement.replaceChild(element, oldElement)
+			return oldElement.parentElement.replaceChild(element, oldElement)
 		}
-	}
+	} 
 
-	new Vue({
+	window.app = new Vue({
 		el: "#app",
 		data() {
 			return {
 				infos: {
-					title: 'vue实现'
+					title: 'vue实现',
+					default: '默认'
 				},
 				price: 27
 			}
@@ -57,10 +167,10 @@
 		render(createElement) {
 			return createElement('div', {
 				attrs: {
-					title: this.data.infos.title
+					title: this.infos.title
 				}
 			}, [
-				createElement('span', {}, this.data.price)
+				createElement('span', {}, this.price)
 			])
 		}
 	})

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app"></div>
+
+
+    <script type="wxml">
+        <wx-text>
+            name:{{name}}
+        </wx-text>
+    </script>
+
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="./bridge.js"></script>
+
+    <script>
+        let vm = null
+        window.__bridge.onMessage(res => {
+            vm = new Vue({
+                data() {
+                    return res.data
+                },
+                components: {
+                    'wx-text': {
+                        template: '<span><slot></slot></span>'
+                    }
+                },
+                template: document.querySelector('script[type="wxml"]').innerHTML
+            })
+            vm.$mount('#app')
+        })
+    </script>
+</body>
+</html>
